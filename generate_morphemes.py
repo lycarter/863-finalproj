@@ -2,7 +2,25 @@ from optparse import OptionParser
 
 """ Fill the bag of words.
 """
-def find_morphemes(names_file, output_file, length):
+
+def add_morpheme(morpheme, next_morphemes, morphemes):
+	if morpheme not in morphemes:
+		morphemes[morpheme] = {}
+	for next_morpheme in next_morphemes:
+		if next_morpheme not in morphemes[morpheme]:
+			morphemes[morpheme][next_morpheme] = 0
+		morphemes[morpheme][next_morpheme] += 1
+
+
+def add_start(start_char, name, morphemes, length):
+	start_morphemes = []
+	for end in range(1, length + 1):
+		start_morphemes.append(name[:end])
+	add_morpheme(start_char, start_morphemes, morphemes)
+	first = False
+
+
+def find_morphemes(names_file, output_file, length, start_char="@", end_char="!"):
 	nfd = open(names_file)
 	names = nfd.readlines()
 	names = [line.strip() for line in names]
@@ -13,6 +31,7 @@ def find_morphemes(names_file, output_file, length):
 	for name in names:
 		# print("working on %s" % name)
 		name = name.upper()
+		add_start(start_char, name, morphemes, length)
 		for j in range(1, length+1):
 			i = 0
 			while i+j <= len(name):
@@ -22,7 +41,7 @@ def find_morphemes(names_file, output_file, length):
 
 				# find next morphemes
 				if i+j == len(name):
-					potential_next_morphemes.append('0')
+					potential_next_morphemes.append(end_char)
 				else:
 					for k in range(1, length+1):
 						if i+j+k <= len(name):
@@ -31,20 +50,17 @@ def find_morphemes(names_file, output_file, length):
 							break
 
 				# add to bag of words
-				if potential_morpheme not in morphemes:
-					morphemes[potential_morpheme] = {}
-				for next_morpheme in potential_next_morphemes:
-					if next_morpheme not in morphemes[potential_morpheme]:
-						morphemes[potential_morpheme][next_morpheme] = 0
-					morphemes[potential_morpheme][next_morpheme] += 1
+				add_morpheme(potential_morpheme, potential_next_morphemes, morphemes)
+
 				i += 1
 
 	print morphemes
-	write_morphemes(morphemes, output_file)
+	write_morphemes(morphemes, output_file, start_char, end_char)
 
-def write_morphemes(morphemes, output_file):
+def write_morphemes(morphemes, output_file, start_char, end_char):
 	print("writing output to %s" % output_file)
 	with open(output_file, 'w') as f:
+		f.write("START: %s\nEND: %s\n\n" % (start_char, end_char))
 		for morpheme in morphemes:
 			next_list_str = [n + ': ' + str(morphemes[morpheme][n]) for n in morphemes[morpheme]]
 			s = ', '.join(next_list_str)
