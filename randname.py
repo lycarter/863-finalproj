@@ -39,13 +39,15 @@ def addRule(line, rules):
 	rhs = tokens[1]
 	rhs = rhs.replace('[','').replace(']','')
 	rhs = rhs.split(', ')
+
+	next_morphemes_added = set()
 	for next_morpheme_prob in rhs:
 		(next_morpheme, prob) = next_morpheme_prob.split(": ")
 		prob = float(prob)
-		if next_morpheme in rules[morpheme]:
-			print "WARNING: double entry for morpheme: %s, next_morpheme: %s" % (morpheme, next_morpheme)
-			prob += rules[morpheme][next_morpheme]
-		rules[morpheme][next_morpheme] = prob
+		rules[morpheme].append((prob, next_morpheme))
+		if next_morpheme in next_morphemes_added:
+			print "WARNING: double entry for next morpheme %s of %s" % (next_morpheme, morpheme)
+		next_morphemes_added.add(next_morpheme)
 
 def selectRandom(choices):
 	totalWeight = sum([choice[0] for choice in choices])
@@ -55,8 +57,6 @@ def selectRandom(choices):
 			return choice[1]
 		else:
 			selectedWeight -= choice[0]
-
-
 
 def expandToken(token, rules):
 	if token in rules:
