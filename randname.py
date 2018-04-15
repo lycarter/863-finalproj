@@ -86,10 +86,9 @@ if __name__ == "__main__":
 			elif i>2:
 				addRule(line, rules)
 			i += 1
-	print start
-	print rules
-	print end
-
+	# print start
+	# print rules
+	# print end
 
 	# generate the names
 	for i in range(args.count):
