@@ -2,9 +2,85 @@
 
 # CONSONANTS
 
+1	Cobstruent	Cstop
+1	Cobstruent	Cfricative
+1	Cobstruent	Caffricate
+
+1	Csonorant	Cnasal
+1	Csonorant	Cliquid
+1	Csonorant	Cglide
+
+# stops (p, t, k / b, d, g)
+
+1	Cstop Cstop-voiceless
+1	Cstop-voiceless Cstop-voiceless-bilabial
+1	Cstop-voiceless-bilabial p
+1	Cstop-voiceless Cstop-voiceless-alveolar
+1	Cstop-voiceless-alveolar t
+1	Cstop-voiceless Cstop-voiceless-velar
+1	Cstop-voiceless-velar k
+
+1	Cstop Cstop-voiced
+1	Cstop-voiced Cstop-voiced-bilabial
+1	Cstop-voiced-bilabial b
+1	Cstop-voiced Cstop-voiced-alveolar
+1	Cstop-voiced-alveolar d
+1	Cstop-voiced Cstop-voiced-velar
+1	Cstop-voiced-velar g
+
+# fricatives (f, θ, s, ʃ, h / v, ð, z, ʒ)
+
+1	Cfricative Cfricative-voiceless
+1	Cfricative-voiceless Cfricative-voiceless-labiodental
+1	Cfricative-voiceless-labiodental f
+1	Cfricative-voiceless Cfricative-voiceless-dental
+1	Cfricative-voiceless-dental θ
+1	Cfricative-voiceless Cfricative-voiceless-alveolar
+1	Cfricative-voiceless-alveolar s
+1	Cfricative-voiceless Cfricative-voiceless-palatal
+1	Cfricative-voiceless-palatal ʃ
+1	Cfricative-voiceless Cfricative-voiceless-glottal
+1	Cfricative-voiceless-glottal h
+
+1	Cfricative Cfricative-voiced
+1	Cfricative-voiced Cfricative-voiced-labiodental
+1	Cfricative-voiced-labiodental v
+1	Cfricative-voiced Cfricative-voiced-dental
+1	Cfricative-voiced-dental ð
+1	Cfricative-voiced Cfricative-voiced-alveolar
+1	Cfricative-voiced-alveolar z
+1	Cfricative-voiced Cfricative-voiced-palatal
+1	Cfricative-voiced-palatal ʒ
+
+# affricate (tʃ, dʒ)
+
+1	Caffricate Caffricate-voiceless
+1	Caffricate-voiceless tʃ
+1	Caffricate Caffricate-voiced
+1	Caffricate-voiced dʒ
+
+# nasal (m, n, ŋ)
+
+TODO
+
+# liquid (l, r)
+
+TODO
+
+# glide (w, y)
+
+TODO
+
+# voiced/voiceless
+TODO
+
+# fix this
 # voiceless
+1	Cvoiceless Cvoiceless-stop
 1	Cvoiceless Cvoiceless-fricative
-1	Cvoiceless Cvoiceless-somethingelse
+1	Cvoiceless Cvoiceless-affricate
+
+
 
 # specific consonants
 1	Cvoiceless-fricative	k
