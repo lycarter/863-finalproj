@@ -34,7 +34,7 @@ def addRule(line, rules):
 	if morpheme in rules:
 		print "WARNING: double entry for morpheme: %s" % (morpheme,)
 	else:
-		rules[morpheme] = {}
+		rules[morpheme] = []
 
 	rhs = tokens[1]
 	rhs = rhs.replace('[','').replace(']','')
@@ -58,66 +58,40 @@ def selectRandom(choices):
 		else:
 			selectedWeight -= choice[0]
 
-def expandToken(token, rules):
-	if token in rules:
-		choices = rules[token]
-		return selectRandom(choices)
-	else:
-		return [token]
+def extendName(name, rules):
+	try:
+		choices = rules[name[-1]]
+		newToken = selectRandom(choices)
+		name.extend(newToken)
+	except Exception as e:
+		raise e
 
-def expandSentence(sentence, rules):
-	newSentence = []
-	for token in sentence:
-		newSentence.extend(expandToken(token, rules))
-	return newSentence
-
-def generateSentence(rules):
-	oldSentence = ['START']
-	newSentence = expandSentence(oldSentence, rules)
-	while oldSentence != newSentence:
-		# print(oldSentence)
-		oldSentence = newSentence
-		newSentence = expandSentence(newSentence, rules)
-	# print newSentence
-	return ' '.join(newSentence)
-
-
-
-def expandTreeToken(token, rules):
-	toReturn = [token]
-	if token in rules:
-		choices = rules[token]
-	else:
-		return token
-	choice = selectRandom(choices)
-	for newToken in choice:
-		toReturn.append(expandTreeToken(newToken, rules))
-	return toReturn
-
-def treeToStr(tree):
-	if isinstance(tree, basestring):
-		return tree
-	return '(' + ' '.join([treeToStr(token) for token in tree]) + ')'
-
-def generateTree(rules):
-	tree = expandTreeToken('START', rules)
-	# print(tree)
-	return treeToStr(tree)
+def generateName(rules, start, end):
+	name = [start]
+	while name[-1] != end:
+		extendName(name, rules)
+	return ''.join(name[1:-1])
 
 
 if __name__ == "__main__":
 	# parse the morphemes
 	rules = {}
 	with open(args.morphemes, 'r') as morphemes_file:
+		i = 0
 		for line in morphemes_file:
-			addRule(line, rules)
+			if i == 0:
+				start = line.split()[1]
+			if i == 1:
+				end = line.split()[1]
+			elif i>2:
+				addRule(line, rules)
+			i += 1
+	print start
 	print rules
+	print end
 
 
-	# # generate the sentences
-	# for i in range(args.count):
-	# 	if args.tree:
-	# 		print generateTree(rules)
-	# 	else:
-	# 		print generateSentence(rules)
+	# generate the names
+	for i in range(args.count):
+		print generateName(rules, start, end)
 
