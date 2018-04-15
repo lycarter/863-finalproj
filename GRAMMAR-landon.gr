@@ -1,0 +1,9 @@
+# The start symbol is START.
+
+# Rules for creating full names.
+1 	START ROOT
+1	ROOT	voiceless-fricative 
+
+
+# SYLLABLES
+1	SYL[voiceless] Cvoiceless Vvoiceless

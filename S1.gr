@@ -1,0 +1,15 @@
+# "Grammar" of morphemes
+
+# CONSONANTS
+
+# voiceless
+1	Cvoiceless Cvoiceless-fricative
+1	Cvoiceless Cvoiceless-somethingelse
+
+# specific consonants
+1	Cvoiceless-fricative	k
+
+# VOWELS
+
+# voiceless
+1	Vvoiceless idk more stuff
