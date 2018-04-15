@@ -11,7 +11,7 @@ def find_morphemes(names_file, output_file, length):
 	morphemes = {}
 
 	for name in names:
-		print("working on %s" % name)
+		# print("working on %s" % name)
 		name = name.upper()
 		for j in range(1, length+1):
 			i = 0
@@ -22,7 +22,7 @@ def find_morphemes(names_file, output_file, length):
 
 				# find next morphemes
 				if i+j == len(name):
-					potential_next_morphemes.append('')
+					potential_next_morphemes.append('0')
 				else:
 					for k in range(1, length+1):
 						if i+j+k <= len(name):
@@ -40,6 +40,18 @@ def find_morphemes(names_file, output_file, length):
 				i += 1
 
 	print morphemes
+	write_morphemes(morphemes, output_file)
+
+def write_morphemes(morphemes, output_file):
+	print("writing output to %s" % output_file)
+	with open(output_file, 'w') as f:
+		for morpheme in morphemes:
+			next_list_str = [n + ': ' + str(morphemes[morpheme][n]) for n in morphemes[morpheme]]
+			s = ', '.join(next_list_str)
+			f.write(morpheme + '\t[')
+			f.write(s)
+			f.write(']\n')
+	print("done writing to %s" % output_file)
 
 
 
