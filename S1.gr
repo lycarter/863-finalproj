@@ -61,15 +61,31 @@
 
 # nasal (m, n, ŋ)
 
-TODO
+1	Cnasal	Cnasal-voiced
+1	Cnasal-voiced Cnasal-voiced-bilabial
+1	Cnasal-voiced-bilabial m
+1	Cnasal-voiced Cnasal-voiced-alveolar
+1	Cnasal-voiced-alveolar n
+1	Cnasal-voiced Cnasal-voiced-velar
+1	Cnasal-voiced-velar ŋ
 
 # liquid (l, r)
 
-TODO
+1	Cliquid Cliquid-voiced
+1	Cliquid-voiced Cliquid-voiced-alveolar
+1	Cliquid-voiced-alveolar l
+1	Cliquid-voiced Cliquid-voiced-palatal
+1	Cliquid-voiced-palatal r
 
 # glide (w, y)
 
-TODO
+1	Cglide Cglide-voiced
+1	Cglide-voiced Cglide-voiced-bilabial
+1	Cglide-voiced-bilabial w
+1	Cglide-voiced Cglide-voiced-palatal
+1	Cglide-voiced-palatal y
+
+##### Not sure what is happening below this part (Kevin) ####
 
 # voiced/voiceless
 TODO
