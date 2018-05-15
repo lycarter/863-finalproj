@@ -25,7 +25,7 @@ def select_weighted( d ):
 
 class TrieNode():
 	def __init__(self, char, head_pointer = None):
-		if head_pointer = None:
+		if head_pointer == None:
 			self.head_pointer = self
 		else:
 			self.head_pointer = head_pointer
@@ -44,7 +44,7 @@ class TrieNode():
 		if child_char in self.children:
 			self.children[child_char]._increment_counter()
 		else:
-			self.children[child_char] = TrieNode(child_char)
+			self.children[child_char] = TrieNode(child_char, self.head_pointer)
 
 	def clear_weights(self):
 		self.counter = 1
