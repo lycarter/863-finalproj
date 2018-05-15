@@ -5,6 +5,24 @@ from optparse import OptionParser
 """ Fill the bag of words.
 """
 
+def select_weighted( d ):
+   # calculate total
+   total = 0
+   for key in d:
+      total = total + d[key]
+   accept_prob = float( 1.0 / total )
+
+   # pick a weighted value from d
+   n_seen = 0
+   for key in d:
+      current_key = key
+      for val in d[key]:
+         dice_roll = random.random()
+         accept_prob = float( 1.0 / ( total - n_seen ) )
+         n_seen = n_seen + 1
+         if dice_roll <= accept_prob:
+            return current_key
+
 class TrieNode():
 	def __init__(self, char, head_pointer = None):
 		if head_pointer = None:
@@ -98,14 +116,6 @@ class TrieNode():
 				return child[1]
 		return None # syllable end
 
-	def choose_end_or_continue(self):
-		total_counter = self.word_finished
-		for next_syllable in self.weighted_next_syllables:
-			total_counter += next_syllable[0]
-		r = random.randrange(total_counter)
-		for next_syllable in self.weighted_next_syllables:
-			r -= next_syllable[]
-
 	def generate_random_syllable(self, sofar=[]):
 		random_child = self.choose_random_child()
 		if random_child is None:
@@ -119,8 +129,13 @@ class TrieNode():
 		random_child = self.choose_random_child()
 		if random_child is None:
 			sofar.append(self.char)
-
-			# choose whether to end word or get next syllable
+			if self.word_finished > 0:
+				self.weighted_next_syllables[None] = self.word_finished
+			next_syllable = select_weighted(self.weighted_next_syllables)
+			if next_syllable is None:
+				sofar
+			else:
+				return next_syllable.generate_random_word(sofar)
 		else:
 			sofar.append(self.char)
 			return random_child.generate_random_word(sofar)
