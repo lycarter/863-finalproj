@@ -8,24 +8,17 @@ from optparse import OptionParser
 class NoSuchSyllable(Exception):
 	pass
 
-def select_weighted( d ):
-	print("selecting weighted from %s" % (d,))
-   # calculate total
+def select_weighted(dct):
+	total_weight = 0
+	for k, v in dct.items():
+		total_weight += v
+	rand_val = random.randrange(total_weight)
 	total = 0
-	for key in d:
-		total = total + d[key]
-	accept_prob = float( 1.0 / total )
-
-	# pick a weighted value from d
-	n_seen = 0
-	for key in d:
-		current_key = key
-		for val in d[key]:
-			dice_roll = random.random()
-			accept_prob = float( 1.0 / ( total - n_seen ) )
-			n_seen = n_seen + 1
-			if dice_roll <= accept_prob:
-				return current_key
+	for k, v in dct.items():
+		total += v
+		if rand_val <= total:
+			return k
+	assert False, 'unreachable'
 
 class TrieNode():
 	def __init__(self, char, head_pointer = None):
@@ -148,15 +141,18 @@ class TrieNode():
 			sofar.append(self.char)
 			if self.word_finished > 0:
 				self.weighted_next_syllables[None] = self.word_finished
+
 			if len(self.weighted_next_syllables) == 0:
-				print("error: I am not supposed to finish a word, but i am the end of a syllable")
-				next_syllable = None
+				# print("error: I am not supposed to finish a word, but i am the end of a syllable")
+				next_syllable_char = None
 			else:
-				next_syllable = select_weighted(self.weighted_next_syllables)
-			if next_syllable is None:
+				# print("selecting a new syllable!")
+				next_syllable_char = select_weighted(self.weighted_next_syllables)
+			if next_syllable_char is None:
+				# print("ending word")
 				return sofar
 			else:
-				return next_syllable.generate_random_word(sofar)
+				return self.next_syllables[next_syllable_char].generate_random_word(sofar)
 		else:
 			sofar.append(self.char)
 			return random_child.generate_random_word(sofar)
@@ -193,7 +189,8 @@ class Morphemes():
 			word = word.split(' ')
 			self.morphemes.add_word(word)
 
-		print self.morphemes.generate_random_word()
+		for i in range(50):
+			print self.morphemes.generate_random_word([])
 		self.pickle_morphemes
 
 
