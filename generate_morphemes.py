@@ -78,8 +78,9 @@ class TrieNode():
 		try:
 			self.children[start_of_next_syllable].add_word(suffix)
 		except KeyError:
-			print("error: this syllable got chopped wrong")
-			print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
+			pass
+			# print("error: this syllable got chopped wrong")
+			# print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
 
 
 	def add_word(self, suffix):
@@ -173,12 +174,12 @@ class Morphemes():
 			syllable = syllable.split(' ')
 			self.morphemes.add_suffix(syllable)
 
-		print self.morphemes
-		print self.morphemes.generate_random_syllable()
+		# print self.morphemes
+		# print self.morphemes.generate_random_syllable()
 		self.pickle_morphemes()
 		# self.write_morphemes(output_file, start_char, end_char)
 
-	def populate_words(self, words_file):
+	def populate_words(self, words_file, output_file, number_tests):
 		self.morphemes.clear_weights()
 		wfd = open(words_file)
 		words = wfd.readlines()
@@ -189,15 +190,18 @@ class Morphemes():
 			word = word.split(' ')
 			self.morphemes.add_word(word)
 
-		for i in range(50):
-			print self.morphemes.generate_random_word([])
-		self.pickle_morphemes
+		with open(output_file, 'w') as f:
+			for i in range(number_tests*2):
+				ex =  self.morphemes.generate_random_word([])
+				f.write(str(ex)+'\n')
+				# print ex
+			self.pickle_morphemes
 
 
 	def write_morphemes(self, output_file):
 		print("writing output to %s" % output_file)
 		with open(output_file, 'w') as f:
-			f.write("START: %s\nEND: %s\n\n" % (start_char, end_char))
+			# f.write("START: %s\nEND: %s\n\n" % (start_char, end_char))
 			for morpheme in self.morphemes:
 				next_list_str = [n + ': ' + str(self.morphemes[morpheme][n]) for n in self.morphemes[morpheme]]
 				s = ', '.join(next_list_str)
@@ -208,6 +212,67 @@ class Morphemes():
 
 	def pickle_morphemes(self, output_pickle="out.p"):
 		pickle.dump(self.morphemes, open(output_pickle, "wb"))
+
+	def translate_to_ipa(self, output_file,number_tests):
+		#Load IPA to Syllable doc and build ipa/syllable dict and vocab/consonant ipa lists
+		translate = open('IPA_to_syllables.txt')
+		sounds = translate.readlines()
+		sounds = [line.strip() for line in sounds]
+		translate.close()
+
+		syllableToIpa = {}
+		vowels = []
+		consonants = []
+
+		onVowel = True
+		for sound in sounds:
+			if (len(sound.split()) > 1):
+				sound = sound.split()
+				ipa = sound[0]
+				syllable = sound[1]
+				example = sound[2:]
+				# print ipa, syllable
+			else:
+				onVowel = False
+			if onVowel:
+				syllableToIpa[syllable] = ipa
+				vowels.append(ipa)
+			else:
+				syllableToIpa[syllable] = ipa
+				consonants.append(ipa)
+
+		#Grab generated examples 
+		generatedWords = open(output_file)
+		sounds = generatedWords.readlines()
+		sounds = [line.strip() for line in sounds]
+		generatedWords.close()
+
+		#Convert examples, check for at least 1 vowel and write to test doc
+		test = open('test.txt',"w")
+		test.write("Examples generated from Phoneme Markov Model\n")
+		test.write("copy and past example into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
+		output = []
+		hasVowel = False
+		count = 0
+		for sound in sounds:
+			soundList = []
+			sound = sound.replace('\'','').replace(']','').replace('[','').split(',')
+			for i in range(1,len(sound)):
+				soundList.append(syllableToIpa[sound[i].strip()])
+				if syllableToIpa[sound[i].strip()] in vowels:
+					hasVowel = True
+			word = ''.join(soundList)
+			# print sound, '-->', word
+			if (hasVowel and (count < number_tests)):
+				test.write(word+'\n')
+				output.append(word)
+				print word
+				count+=1
+			else:
+				pass
+			hasVowel = False
+
+		test.close()
 
 
 
@@ -220,6 +285,8 @@ if __name__ == "__main__":
 	parser.add_option("-o", "--output", dest="output",
 		help="input list of syllables", metavar="file")
 	parser.add_option("-l", "--length", dest="length",
+		help="max syllable length", default=7, metavar="int")
+	parser.add_option("-n", "--numberTests", dest="numberTests",
 		help="max syllable length", default=7, metavar="int")
 
 	(options, args) = parser.parse_args()
@@ -235,4 +302,6 @@ if __name__ == "__main__":
 	print "max morpheme length: %s" % (options.length)
 	morphs = Morphemes(options.length)
 	morphs.find_morphemes(options.syllables, str(options.output))
-	morphs.populate_words(options.words)
+	morphs.populate_words(options.words, options.output, int(options.numberTests))
+	morphs.translate_to_ipa(options.output, int(options.numberTests))
+	print "Open test.txt for testing document!"
