@@ -5,23 +5,27 @@ from optparse import OptionParser
 """ Fill the bag of words.
 """
 
-def select_weighted( d ):
-   # calculate total
-   total = 0
-   for key in d:
-      total = total + d[key]
-   accept_prob = float( 1.0 / total )
+class NoSuchSyllable(Exception):
+	pass
 
-   # pick a weighted value from d
-   n_seen = 0
-   for key in d:
-      current_key = key
-      for val in d[key]:
-         dice_roll = random.random()
-         accept_prob = float( 1.0 / ( total - n_seen ) )
-         n_seen = n_seen + 1
-         if dice_roll <= accept_prob:
-            return current_key
+def select_weighted( d ):
+	print("selecting weighted from %s" % (d,))
+   # calculate total
+	total = 0
+	for key in d:
+		total = total + d[key]
+	accept_prob = float( 1.0 / total )
+
+	# pick a weighted value from d
+	n_seen = 0
+	for key in d:
+		current_key = key
+		for val in d[key]:
+			dice_roll = random.random()
+			accept_prob = float( 1.0 / ( total - n_seen ) )
+			n_seen = n_seen + 1
+			if dice_roll <= accept_prob:
+				return current_key
 
 class TrieNode():
 	def __init__(self, char, head_pointer = None):
@@ -70,11 +74,20 @@ class TrieNode():
 		try:
 			next_syllable_head = self.head_pointer.children[next_char]
 		except KeyError:
-			print("error: no syllables starting with %s" % next_char)
+			# print("error: no syllables starting with %s" % next_char)
+			raise NoSuchSyllable()
 		self.next_syllables[next_char] = next_syllable_head
 		if next_char not in self.weighted_next_syllables:
 			self.weighted_next_syllables[next_char] = 1
 		self.weighted_next_syllables[next_char] += 1
+
+	def _extend_syllable(self, start_of_next_syllable, suffix):
+		try:
+			self.children[start_of_next_syllable].add_word(suffix)
+		except KeyError:
+			print("error: this syllable got chopped wrong")
+			print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
+
 
 	def add_word(self, suffix):
 		if len(suffix) == 0:
@@ -85,13 +98,17 @@ class TrieNode():
 			start_of_next_syllable = suffix.pop(0)
 
 			if self.syllable_finished > 0:
-				self._add_next_syllable(start_of_next_syllable)
-				self.head_pointer.children[start_of_next_syllable].add_word(suffix)
-			else:
+				# I can end this syllable
 				try:
-					self.children[start_of_next_syllable].add_word(suffix)
-				except KeyError:
-					print("error: this syllable got chopped wrong")
+					self._add_next_syllable(start_of_next_syllable)
+					self.head_pointer.children[start_of_next_syllable].add_word(suffix)
+				except NoSuchSyllable:
+					self._extend_syllable(start_of_next_syllable, suffix)
+			else:
+				# I cannot end this syllable
+				self._extend_syllable(start_of_next_syllable, suffix)
+
+
 
 
 	def populate_weighted_children(self):
@@ -131,9 +148,13 @@ class TrieNode():
 			sofar.append(self.char)
 			if self.word_finished > 0:
 				self.weighted_next_syllables[None] = self.word_finished
-			next_syllable = select_weighted(self.weighted_next_syllables)
+			if len(self.weighted_next_syllables) == 0:
+				print("error: I am not supposed to finish a word, but i am the end of a syllable")
+				next_syllable = None
+			else:
+				next_syllable = select_weighted(self.weighted_next_syllables)
 			if next_syllable is None:
-				sofar
+				return sofar
 			else:
 				return next_syllable.generate_random_word(sofar)
 		else:
@@ -161,6 +182,21 @@ class Morphemes():
 		self.pickle_morphemes()
 		# self.write_morphemes(output_file, start_char, end_char)
 
+	def populate_words(self, words_file):
+		self.morphemes.clear_weights()
+		wfd = open(words_file)
+		words = wfd.readlines()
+		words = [line.strip() for line in words]
+		wfd.close()
+
+		for word in words:
+			word = word.split(' ')
+			self.morphemes.add_word(word)
+
+		print self.morphemes.generate_random_word()
+		self.pickle_morphemes
+
+
 	def write_morphemes(self, output_file):
 		print("writing output to %s" % output_file)
 		with open(output_file, 'w') as f:
@@ -180,8 +216,10 @@ class Morphemes():
 
 if __name__ == "__main__":
 	parser = OptionParser()
-	parser.add_option("-n", "--syllables", dest="syllables",
+	parser.add_option("-s", "--syllables", dest="syllables",
 		help="input list of syllables", metavar="file")
+	parser.add_option("-w", "--words", dest="words",
+		help="input list of words", metavar="file")
 	parser.add_option("-o", "--output", dest="output",
 		help="input list of syllables", metavar="file")
 	parser.add_option("-l", "--length", dest="length",
@@ -200,3 +238,4 @@ if __name__ == "__main__":
 	print "max morpheme length: %s" % (options.length)
 	morphs = Morphemes(options.length)
 	morphs.find_morphemes(options.syllables, str(options.output))
+	morphs.populate_words(options.words)
