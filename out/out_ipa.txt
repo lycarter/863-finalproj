@@ -1,3 +1,23 @@
 Examples generated from Phoneme Markov Model
 copy and past example into: https://itinerarium.github.io/phoneme-synthesis/
 
+θɜ:sk
+kyɛz
+hi:mz
+di:vz
+hɪlz
+ɑ:vz
+ɔ:g
+ʊz
+ʃlʌm
+kɪz
+ʌmp
+ɪndʒ
+vɒfs
+ɑ:tʃt
+teərz
+ɜ:lz
+yɑ:r
+ɑ:mz
+əθs
+kaɪvd

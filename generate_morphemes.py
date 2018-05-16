@@ -194,7 +194,6 @@ class Morphemes():
 			for i in range(number_tests*2):
 				ex =  self.morphemes.generate_random_word([])
 				f.write(str(ex)+'\n')
-				# print ex
 			self.pickle_morphemes
 
 
@@ -247,16 +246,17 @@ class Morphemes():
 		sounds = [line.strip() for line in sounds]
 		generatedWords.close()
 
-		#Convert examples, check for at least 1 vowel and write to test doc
-		test = open('test.txt',"w")
-		test.write("Examples generated from Phoneme Markov Model\n")
-		test.write("copy and past example into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
+		#Convert examples, check for at least 1 vowel and write to ipa doc
+		ipa = open('out/out_ipa.txt',"w")
+		ipa.write("Examples generated from Phoneme Markov Model\n")
+		ipa.write("copy and past example into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
 		output = []
 		hasVowel = False
 		count = 0
+		syllableWords = []
 		for sound in sounds:
 			soundList = []
-			sound = sound.replace('\'','').replace(']','').replace('[','').split(',')
+			sound = sound.replace(' ','').replace('\'','').replace(']','').replace('[','').split(',')
 			for i in range(1,len(sound)):
 				soundList.append(syllableToIpa[sound[i].strip()])
 				if syllableToIpa[sound[i].strip()] in vowels:
@@ -264,15 +264,25 @@ class Morphemes():
 			word = ''.join(soundList)
 			# print sound, '-->', word
 			if (hasVowel and (count < number_tests)):
-				test.write(word+'\n')
+				ipa.write(word+'\n')
 				output.append(word)
-				print word
+				syllableWords.append(''.join(sound[1:]))
+				print word,"		",''.join(sound[1:])
 				count+=1
 			else:
 				pass
 			hasVowel = False
-
-		test.close()
+		ipa.close()
+		
+		syl = open('out/out_syllables.txt',"w")
+		syl.write("Examples generated from Phoneme Markov Model\n")
+		syl.write("copy and past example into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
+		output = []
+		hasVowel = False
+		count = 0
+		for word in syllableWords:
+			syl.write(word+'\n')
+		syl.close()
 
 
 
@@ -304,4 +314,5 @@ if __name__ == "__main__":
 	morphs.find_morphemes(options.syllables, str(options.output))
 	morphs.populate_words(options.words, options.output, int(options.numberTests))
 	morphs.translate_to_ipa(options.output, int(options.numberTests))
-	print "Open test.txt for testing document!"
+	print "Open out/out_ipa.txt for example words in IPA."
+	print "Open out/out_syllables.txt for example words in a more readable syllable format."
