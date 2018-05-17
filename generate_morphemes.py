@@ -1,9 +1,13 @@
 import random
+import timeit
 import pickle
 from optparse import OptionParser
 
 """ Fill the bag of words.
 """
+
+incorrect_parses = 0
+
 
 class NoSuchSyllable(Exception):
 	pass
@@ -63,7 +67,7 @@ class TrieNode():
 		else:
 			self.syllable_finished += 1
 
-	def _add_next_syllable(self, next_char):
+	def _add_next_syllable(self, next_char, weight=1):
 		try:
 			next_syllable_head = self.head_pointer.children[next_char]
 		except KeyError:
@@ -71,20 +75,23 @@ class TrieNode():
 			raise NoSuchSyllable()
 		self.next_syllables[next_char] = next_syllable_head
 		if next_char not in self.weighted_next_syllables:
-			self.weighted_next_syllables[next_char] = 1
-		self.weighted_next_syllables[next_char] += 1
+			self.weighted_next_syllables[next_char] = 0
+		self.weighted_next_syllables[next_char] += weight
 
-	def _extend_syllable(self, start_of_next_syllable, suffix):
+	def _extend_syllable(self, start_of_next_syllable, suffix, weight=1):
+		global incorrect_parses
 		try:
-			self.children[start_of_next_syllable].add_word(suffix)
+			self.children[start_of_next_syllable].add_word(suffix, weight)
 		except KeyError:
-			print("error: this syllable got chopped wrong")
-			print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
+			incorrect_parses += 1
+			pass
+			# print("error: this syllable got chopped wrong")
+			# print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
 
 
-	def add_word(self, suffix):
+	def add_word(self, suffix, weight=1):
 		if len(suffix) == 0:
-			self.word_finished += 1
+			self.word_finished += weight
 		else:
 			# might have to choose whether to "end" the syllable here.
 			# for now defaulting to yes
@@ -93,15 +100,13 @@ class TrieNode():
 			if self.syllable_finished > 0:
 				# I can end this syllable
 				try:
-					self._add_next_syllable(start_of_next_syllable)
-					self.head_pointer.children[start_of_next_syllable].add_word(suffix)
+					self._add_next_syllable(start_of_next_syllable, weight)
+					self.head_pointer.children[start_of_next_syllable].add_word(suffix, weight)
 				except NoSuchSyllable:
-					self._extend_syllable(start_of_next_syllable, suffix)
+					self._extend_syllable(start_of_next_syllable, suffix, weight)
 			else:
 				# I cannot end this syllable
-				self._extend_syllable(start_of_next_syllable, suffix)
-
-
+				self._extend_syllable(start_of_next_syllable, suffix, weight)
 
 
 	def populate_weighted_children(self):
@@ -159,7 +164,7 @@ class TrieNode():
 
 
 class Morphemes():
-	def __init__(self, max_length):
+	def __init__(self):
 		self.morphemes = TrieNode('@')
 
 	def find_morphemes(self, syllables_file, output_file):
@@ -168,14 +173,19 @@ class Morphemes():
 		syllables = [line.strip() for line in syllables]
 		nfd.close()
 
+		start = timeit.default_timer()
+
 		for syllable in syllables:
 			# print("working on %s" % syllable)
 			syllable = syllable.split(' ')
 			self.morphemes.add_suffix(syllable)
 
-		print self.morphemes
-		print self.morphemes.generate_random_syllable()
-		self.pickle_morphemes()
+		elapsed = timeit.default_timer() - start
+		print("time to parse syllables: %s" % (elapsed,))
+
+		# print self.morphemes
+		# print self.morphemes.generate_random_syllable()
+		# self.pickle_morphemes()
 		# self.write_morphemes(output_file, start_char, end_char)
 
 	def populate_words(self, words_file):
@@ -185,13 +195,48 @@ class Morphemes():
 		words = [line.strip() for line in words]
 		wfd.close()
 
+		start = timeit.default_timer()
+
 		for word in words:
 			word = word.split(' ')
 			self.morphemes.add_word(word)
 
-		for i in range(50):
-			print self.morphemes.generate_random_word([])
-		self.pickle_morphemes
+		elapsed = timeit.default_timer() - start
+		print("time to parse dictionary: %s" % (elapsed,))
+		print("number of incorrect parses: %s out of %s, %s pct" % (incorrect_parses,len(words), 100*float(incorrect_parses)/len(words)))
+
+	def apply_weights(self, words_file):
+		# for now, use inverse length to weight things
+		self.morphemes.clear_weights()
+		wfd = open(words_file)
+		words = wfd.readlines()
+		words = [line.strip() for line in words]
+		wfd.close()
+
+		start = timeit.default_timer()
+
+		for word in words:
+			word = word.split(' ')
+			self.morphemes.add_word(word, 1.0/len(word))
+
+		elapsed = timeit.default_timer() - start
+		print("time to apply weights: %s" % (elapsed,))
+
+	def generate_words(self, n):
+		for i in range(n):
+			print(self.morphemes.generate_random_word([]))
+
+	def time_word_generation(self, n):
+		wds = []
+
+		start = timeit.default_timer()
+		for i in range(n):
+			wds.append(self.morphemes.generate_random_word([]))
+
+		elapsed = timeit.default_timer() - start
+		print("time to generate %s words: %s" % (n, elapsed))
+		wdspersec = n/elapsed
+		print("words per sec = %s" % (wdspersec,))
 
 
 	def write_morphemes(self, output_file):
@@ -219,11 +264,8 @@ if __name__ == "__main__":
 		help="input list of words", metavar="file")
 	parser.add_option("-o", "--output", dest="output",
 		help="input list of syllables", metavar="file")
-	parser.add_option("-l", "--length", dest="length",
-		help="max syllable length", default=7, metavar="int")
 
 	(options, args) = parser.parse_args()
-	options.length = int(options.length)
 
 
 	if options.syllables is None or options.output is None:
@@ -232,7 +274,7 @@ if __name__ == "__main__":
 
 	print "reading syllables file: %s" % (options.syllables)
 	print "outputting to file: %s" % (options.output)
-	print "max morpheme length: %s" % (options.length)
-	morphs = Morphemes(options.length)
+	morphs = Morphemes()
 	morphs.find_morphemes(options.syllables, str(options.output))
 	morphs.populate_words(options.words)
+	morphs.apply_weights(options.words)
