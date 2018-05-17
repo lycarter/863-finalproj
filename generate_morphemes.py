@@ -16,7 +16,7 @@ def select_weighted(dct):
 	total_weight = 0
 	for k, v in dct.items():
 		total_weight += v
-	rand_val = random.randrange(total_weight)
+	rand_val = random.random()*total_weight
 	total = 0
 	for k, v in dct.items():
 		total += v
@@ -84,7 +84,6 @@ class TrieNode():
 			self.children[start_of_next_syllable].add_word(suffix, weight)
 		except KeyError:
 			incorrect_parses += 1
-			pass
 			# print("error: this syllable got chopped wrong")
 			# print("I am %s, so far I have %s then %s remaining" % (self.char, start_of_next_syllable, suffix))
 
@@ -182,11 +181,7 @@ class Morphemes():
 
 		elapsed = timeit.default_timer() - start
 		print("time to parse syllables: %s" % (elapsed,))
-
-		# print self.morphemes
-		# print self.morphemes.generate_random_syllable()
 		# self.pickle_morphemes()
-		# self.write_morphemes(output_file, start_char, end_char)
 
 	def populate_words(self, words_file):
 		self.morphemes.clear_weights()
@@ -222,10 +217,6 @@ class Morphemes():
 		elapsed = timeit.default_timer() - start
 		print("time to apply weights: %s" % (elapsed,))
 
-	def generate_words(self, n):
-		for i in range(n):
-			print(self.morphemes.generate_random_word([]))
-
 	def time_word_generation(self, n):
 		wds = []
 
@@ -238,21 +229,60 @@ class Morphemes():
 		wdspersec = n/elapsed
 		print("words per sec = %s" % (wdspersec,))
 
-
-	def write_morphemes(self, output_file):
-		print("writing output to %s" % output_file)
-		with open(output_file, 'w') as f:
-			f.write("START: %s\nEND: %s\n\n" % (start_char, end_char))
-			for morpheme in self.morphemes:
-				next_list_str = [n + ': ' + str(self.morphemes[morpheme][n]) for n in self.morphemes[morpheme]]
-				s = ', '.join(next_list_str)
-				f.write(morpheme + '\t[')
-				f.write(s)
-				f.write(']\n')
-		print("done writing to %s" % output_file)
-
 	def pickle_morphemes(self, output_pickle="out.p"):
 		pickle.dump(self.morphemes, open(output_pickle, "wb"))
+
+	def translate_to_ipa(self, output_file, number_tests):
+		# Load IPA to Syllable doc and build ipa/syllable dict and vocab/consonant ipa lists
+		translate = open('IPA_to_syllables.txt')
+		sounds = translate.readlines()
+		sounds = [line.strip() for line in sounds]
+		translate.close()
+
+		syllableToIpa = {}
+		vowels = []
+		consonants = []
+
+		onVowel = True
+		for sound in sounds:
+			if (len(sound.split()) > 1):
+				sound = sound.split()
+				ipa = sound[0]
+				syllable = sound[1]
+				example = sound[2:]
+				# print ipa, syllable
+			else:
+				onVowel = False
+			if onVowel:
+				syllableToIpa[syllable] = ipa
+				vowels.append(ipa)
+			else:
+				syllableToIpa[syllable] = ipa
+				consonants.append(ipa)
+
+
+		ipa = open(output_file + ".ipa","w")
+		beep = open(output_file + ".beep", "w")
+		ipa.write("For speech synthesis, copy and paste examples into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
+		output = []
+		i = 0
+
+		while i < number_tests:
+			hasVowel = False
+			beep_word = self.morphemes.generate_random_word([])[1:]
+			for char in beep_word:
+				if syllableToIpa[char] in vowels:
+					hasVowel = True
+			ipa_word = ''.join([syllableToIpa[char] for char in beep_word])
+			beep_word = ''.join(beep_word)
+
+			if hasVowel:
+				i += 1
+				ipa.write(ipa_word + '\n')
+				beep.write(beep_word + '\n')
+				print("%s\t\t%s" % (ipa_word, beep_word))
+		ipa.close()
+		beep.close()
 
 
 
@@ -263,18 +293,24 @@ if __name__ == "__main__":
 	parser.add_option("-w", "--words", dest="words",
 		help="input list of words", metavar="file")
 	parser.add_option("-o", "--output", dest="output",
-		help="input list of syllables", metavar="file")
-
+		help="file to output generated words", metavar="file")
+	parser.add_option("-n", "--numberTests", dest="exampleN",
+		help="number of words to generate", default=50, metavar="int")
+	parser.add_option("-b", "--benchmarkTests", dest="benchmarkN",
+		help="number of words to generate for benchmarking", default=100000, metavar="int")
 	(options, args) = parser.parse_args()
 
 
-	if options.syllables is None or options.output is None:
+	if options.syllables is None or options.output is None or options.words is None:
 		parser.print_help()
 		exit(1)
 
 	print "reading syllables file: %s" % (options.syllables)
+	print "reading words file: %s" % (options.words)
 	print "outputting to file: %s" % (options.output)
 	morphs = Morphemes()
 	morphs.find_morphemes(options.syllables, str(options.output))
 	morphs.populate_words(options.words)
 	morphs.apply_weights(options.words)
+	morphs.time_word_generation(options.benchmarkN)
+	morphs.translate_to_ipa(options.output, int(options.exampleN))

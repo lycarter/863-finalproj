@@ -1,0 +1,9 @@
+README
+
+To run, install Python 2.7 along with modules random, timeit, pickle, and optparse. These should come installed by default.
+
+Invoke with
+
+```
+python generate_morphemes.py -s syllables.txt -w phonetic_dictionary.txt -o sample_out
+```

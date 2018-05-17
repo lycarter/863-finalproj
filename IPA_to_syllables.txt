@@ -1,0 +1,46 @@
+ɑ:	aa     odd
+æ	ae     at
+ʌ	ah     hut
+ɔ:	ao     ought
+aʊ	aw     cow
+ə	ax     abaft  (first vowel; schwa)
+aɪ	ay     hide
+eə	ea     wear   (remember, this is Britsh pronunciation)
+ɛ	eh     Ed
+ɜ:	er     hurt
+eɪ	ey     ate
+ɪə	ia     fortieth  (second vowel)
+ɪ	ih     it
+i:	iy     teen
+a	oh     mob
+əʊ	ow     lobe
+ɔɪ	oy     toy
+ʊə	ua     intellectual  (last vowel)
+ʊ	uh     nook
+u: 	uw     two
+	
+
+p	p      pick
+b	b      be     
+t	t      tip
+d	d      dee
+f 	f      fee
+v	v      vise 
+θ	th     thick
+ð	dh     thee   (eth)
+s	s      sick
+z	z      zip
+ʃ	sh     ship
+ʒ	zh     seizure
+tʃ	ch     cheese
+dʒ	jh     jeep
+k	k      key
+ŋ	ng     rang   (engma)
+g	g      green
+m	m      me
+n	n      new
+l	l      lee
+r	r      ream
+w	w      win
+y	y      you 
+h	hh     he

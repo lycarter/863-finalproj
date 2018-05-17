@@ -1,0 +1,3 @@
+Examples generated from Phoneme Markov Model
+copy and past example into: https://itinerarium.github.io/phoneme-synthesis/
+
