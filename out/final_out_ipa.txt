@@ -3,7 +3,7 @@ copy and past example into: https://itinerarium.github.io/phoneme-synthesis/
 
 ɪz
 ɑ:sks
-ɒdʒ
+adʒ
 θɪks
 ɛdz
 aʊsts
