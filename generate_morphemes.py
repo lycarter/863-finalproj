@@ -274,7 +274,7 @@ class Morphemes():
 			hasVowel = False
 		ipa.close()
 		
-		syl = open('out/out_syllables.txt',"w")
+		syl = open('out/out_beep.txt',"w")
 		syl.write("Examples generated from Phoneme Markov Model\n")
 		syl.write("copy and past example into: https://itinerarium.github.io/phoneme-synthesis/\n\n")
 		output = []
@@ -315,4 +315,4 @@ if __name__ == "__main__":
 	morphs.populate_words(options.words, options.output, int(options.numberTests))
 	morphs.translate_to_ipa(options.output, int(options.numberTests))
 	print "Open out/out_ipa.txt for example words in IPA."
-	print "Open out/out_syllables.txt for example words in a more readable syllable format."
+	print "Open out/out_beep.txt for example words in a more readable format."
